@@ -16,6 +16,9 @@
     "global": "^4.3.2",
     "is-empty": "^1.2.0"
   },
+  "scripts": {
+    "test": "npx mocha --watch index.js lib/*.js test/*.js"
+  },
   "standard": {
     "globals": [
       "describe",
