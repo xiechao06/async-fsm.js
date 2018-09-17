@@ -1,4 +1,6 @@
 const State = require('./state')
+const { FSMUnknownState } = require('./errors')
+console.log(FSMUnknownState)
 class Fsm {
   constructor () {
     this._states = {}
@@ -37,11 +39,20 @@ class Fsm {
       return this._state
     }
     this._state = arg
+    if (!this._states.hasOwnProperty(arg)) {
+      throw new FSMUnknownState(arg)
+    }
     return this
   }
 
   perform (op) {
+    if (!this._state) {
+      throw new Error('State is empty, do you forget to set the initialize state?')
+    }
     this._state = this._states[this._state].transit(op)
+    if (!this._states.hasOwnProperty(this._state)) {
+      throw new FSMUnknownState(this._state)
+    }
     return this
   }
 

@@ -1,5 +1,5 @@
 const { Fsm, State } = require('../')
-const { FSMInvalidOp } = require('../errors')
+const { FSMInvalidOp, FSMUnknownState } = require('../errors')
 
 require('should')
 
@@ -59,13 +59,35 @@ describe('fsm', () => {
       .terminated.should.be.exactly(true)
   })
 
-  it('throw invalid op', async () => {
+  it('throw invalid op', () => {
     (function () {
       new Fsm()
         .addState('closed')
         .state('closed')
         .perform('close')
     })
-      .should.throw(FSMInvalidOp)
+      .should.throw(Error, { op: 'close' })
+  })
+
+  it('throw unknown state', () => {
+    (function () {
+      new Fsm()
+        .state('closed')
+    })
+      .should.throw(Error, { state: 'closed' })
+
+    ;(function () {
+      new Fsm()
+        .addState(function (state) {
+          state
+            .name('foo')
+            .routes({
+              a: 'bar'
+            })
+        })
+        .state('foo')
+        .perform('a')
+    })
+      .should.throw(Error, { state: 'bar' })
   })
 })
