@@ -1,4 +1,4 @@
-const { Fsm, State } = require('./')
+const { Fsm, State } = require('../')
 require('should')
 
 describe('fsm', () => {
