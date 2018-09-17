@@ -1,4 +1,6 @@
 const { Fsm, State } = require('../')
+const { FSMInvalidOp } = require('../errors')
+
 require('should')
 
 describe('fsm', () => {
@@ -55,5 +57,15 @@ describe('fsm', () => {
       .addState('closed')
       .state('closed')
       .terminated.should.be.exactly(true)
+  })
+
+  it('throw invalid op', async () => {
+    (function () {
+      new Fsm()
+        .addState('closed')
+        .state('closed')
+        .perform('close')
+    })
+      .should.throw(FSMInvalidOp)
   })
 })
