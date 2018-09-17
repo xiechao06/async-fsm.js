@@ -44,6 +44,10 @@ class Fsm {
     this._state = this._states[this._state].transit(op)
     return this
   }
+
+  get terminated () {
+    return this._states[this._state].terminated
+  }
 }
 
 module.exports = { Fsm, State }

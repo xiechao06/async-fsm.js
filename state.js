@@ -1,3 +1,5 @@
+const isEmpty = require('is-empty')
+
 class State {
   constructor (name) {
     this._name = name
@@ -21,6 +23,10 @@ class State {
 
   transit (op) {
     return this._routes[op]
+  }
+
+  get terminated () {
+    return isEmpty(this._routes)
   }
 }
 
