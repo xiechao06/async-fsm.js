@@ -1,4 +1,5 @@
 const State = require('../state')
+const { FSMInvalidOp } = require('../errors')
 require('should')
 
 describe('state', function () {
@@ -24,5 +25,13 @@ describe('state', function () {
       })
       .transit('beat')
       .should.be.exactly('bad')
+
+    ;(function () {
+      new State('good')
+        .routes({
+          beat: 'bad'
+        })
+        .transit('hit')
+    }).should.throw(FSMInvalidOp)
   })
 })
