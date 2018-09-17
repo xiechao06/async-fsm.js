@@ -5,6 +5,8 @@ class State {
   constructor (name) {
     this._name = name
     this._routes = {}
+    this._onEnterCbs = []
+    this._onLeaveCbs = []
   }
 
   name (arg) {
@@ -29,6 +31,24 @@ class State {
       throw new FSMInvalidOp(op)
     }
     return ret
+  }
+
+  onEnter (arg) {
+    this._onEnterCbs.push(arg)
+    return this
+  }
+
+  get onEnterCbs () {
+    return this._onEnterCbs
+  }
+
+  onLeave (arg) {
+    this._onLeaveCbs.push(arg)
+    return this
+  }
+
+  get onLeaveCbs () {
+    return this._onLeaveCbs
   }
 
   get terminated () {

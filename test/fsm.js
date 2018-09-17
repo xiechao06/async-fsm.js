@@ -1,5 +1,6 @@
 const { Fsm, State } = require('../')
-const { FSMInvalidOp, FSMUnknownState } = require('../errors')
+const sinon = require('sinon')
+require('should-sinon')
 
 require('should')
 
@@ -89,5 +90,53 @@ describe('fsm', () => {
         .perform('a')
     })
       .should.throw(Error, { state: 'bar' })
+  })
+
+  it('on enter', () => {
+    let onEnter1 = sinon.spy()
+    let onEnter2 = sinon.spy()
+    new Fsm()
+      .addState(function (state) {
+        state
+          .name('foo')
+          .routes({
+            a: 'bar'
+          })
+      })
+      .addState(function (state) {
+        state
+          .name('bar')
+          .onEnter(onEnter1)
+          .onEnter(onEnter2)
+      })
+      .state('foo')
+      .perform('a')
+
+    onEnter1.should.be.calledWith({ from: 'foo', to: 'bar' })
+    onEnter2.should.be.calledWith({ from: 'foo', to: 'bar' })
+  })
+
+  it('on leave', () => {
+    let onLeave1 = sinon.spy()
+    let onLeave2 = sinon.spy()
+    new Fsm()
+      .addState(function (state) {
+        state
+          .name('foo')
+          .routes({
+            a: 'bar'
+          })
+          .onLeave(onLeave1)
+          .onLeave(onLeave2)
+      })
+      .addState(function (state) {
+        state
+          .name('bar')
+      })
+      .state('foo')
+      .perform('a')
+
+    onLeave1.should.be.calledWith({ from: 'foo', to: 'bar' })
+    onLeave2.should.be.calledWith({ from: 'foo', to: 'bar' })
   })
 })
