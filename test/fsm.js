@@ -49,4 +49,11 @@ describe('fsm', () => {
       .perform('close')
       .state().should.be.exactly('closed')
   })
+
+  it('terminated', () => {
+    new Fsm()
+      .addState('closed')
+      .state('closed')
+      .terminated.should.be.exactly(true)
+  })
 })
