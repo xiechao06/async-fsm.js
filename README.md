@@ -122,3 +122,5 @@ $ npm i fsm.js
   })()
   
 ```
+
+please check test for more examples.
