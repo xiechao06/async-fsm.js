@@ -20,7 +20,7 @@ $ npm i fsm.js
 
 ```javascript
   const { Fsm } = require('fsm.js')
-  let fsm = new Fsm()
+  let trafficLightFsm = new Fsm()
     .addState(function (state) {
       state
         .name('green')
@@ -94,26 +94,30 @@ $ npm i fsm.js
 
   (async function () {
 
-    let trafficLight = { color: green, closed: false }
+    let trafficLight = { color: 'green', closed: false }
 
-    fsm
+    trafficLigthFsm
       .bundle(trafficLight)
       .state(trafficLight.color)
 
     // assume I have all the needs
-    await fsm.ops.then(ops => ops.should.be.equal(['turn', 'close']))
+    await trafficLightFsm.ops.then(ops => ops.should.be.equal(['turn', 'close']))
 
-    await fsm
+    await trafficLigthFsm
       .perform('turn')
       .then(fsm => fsm.state().should.be.exactly('yellow'))
 
-    await fsm
+    trafficLight.color.should.be.exactly('yellow')
+
+    await trafficLigthFsm
       .perform('turn')
       .then(fsm => fsm.state().should.be.exactly('green'))
+    trafficLight.color.should.be.exactly('green')
     
-    await fsm
+    await trafficLigthFsm
       .perform('close')
       .then(fsm => fsm.terminated.should.be.exactly(true))
+    trafficLight.closed.should.be.exactly(true)
 
   })()
   
