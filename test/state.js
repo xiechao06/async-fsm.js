@@ -1,5 +1,4 @@
 const State = require('../lib/state')
-const { FSMInvalidOp } = require('../lib/errors')
 require('should')
 
 describe('state', function () {
@@ -19,19 +18,34 @@ describe('state', function () {
   })
 
   it('transit', () => {
-    new State('good')
+    return new State('good')
       .routes({
         beat: 'bad'
       })
       .transit('beat')
-      .should.be.exactly('bad')
+      .then(state => state.should.be.exactly('bad'))
+  })
 
-    ;(function () {
-      new State('good')
-        .routes({
-          beat: 'bad'
-        })
-        .transit('hit')
-    }).should.throw(FSMInvalidOp)
+  it('throw invalid op', () => {
+    new State('good')
+      .routes({
+        beat: 'bad'
+      })
+      .transit('hit')
+      .should.be.rejectedWith(Error, { op: 'hit' })
+  })
+
+  it('ops', async () => {
+    new State('good')
+      .routes({
+        beat: {
+          to: 'bad',
+          test () {
+            throw new Error('foo')
+          }
+        }
+      })
+      .ops
+      .should.be.resolvedWith([])
   })
 })

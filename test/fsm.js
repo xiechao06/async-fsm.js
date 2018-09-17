@@ -40,17 +40,16 @@ describe('fsm', () => {
       })
       .addState('closed')
 
-    fsm
-      .state('green')
-      .perform('turnYellow')
-      .state().should.be.exactly('yellow')
-
-    fsm.perform('turnRed')
-      .state().should.be.exactly('red')
-
-    fsm
-      .perform('close')
-      .state().should.be.exactly('closed')
+    return (async function () {
+      await fsm
+        .state('green')
+        .perform('turnYellow')
+      fsm.state().should.be.exactly('yellow')
+      await fsm.perform('turnRed')
+      fsm.state().should.be.exactly('red')
+      await fsm.perform('close')
+      fsm.state().should.be.exactly('closed')
+    })()
   })
 
   it('terminated', () => {
@@ -61,13 +60,28 @@ describe('fsm', () => {
   })
 
   it('throw invalid op', () => {
-    (function () {
-      new Fsm()
-        .addState('closed')
-        .state('closed')
-        .perform('close')
-    })
-      .should.throw(Error, { op: 'close' })
+    new Fsm()
+      .addState('closed')
+      .state('closed')
+      .perform('close')
+      .should.be.rejectedWith(Error, { op: 'close' })
+
+    new Fsm()
+      .addState(function (state) {
+        state.name('created')
+          .routes({
+            close: {
+              to: 'closed',
+              test () {
+                throw new Error('foo')
+              }
+            }
+          })
+      })
+      .addState('closed')
+      .state('created')
+      .perform('close')
+      .should.be.rejectedWith(Error, { message: 'foo' })
   })
 
   it('throw unknown state', () => {
@@ -77,19 +91,17 @@ describe('fsm', () => {
     })
       .should.throw(Error, { state: 'closed' })
 
-    ;(function () {
-      new Fsm()
-        .addState(function (state) {
-          state
-            .name('foo')
-            .routes({
-              a: 'bar'
-            })
-        })
-        .state('foo')
-        .perform('a')
-    })
-      .should.throw(Error, { state: 'bar' })
+    new Fsm()
+      .addState(function (state) {
+        state
+          .name('foo')
+          .routes({
+            a: 'bar'
+          })
+      })
+      .state('foo')
+      .perform('a')
+      .should.be.rejectedWith(Error, { state: 'bar' })
   })
 
   it('on enter', () => {
@@ -111,9 +123,10 @@ describe('fsm', () => {
       })
       .state('foo')
       .perform('a')
-
-    onEnter1.should.be.calledWith({ from: 'foo', to: 'bar' })
-    onEnter2.should.be.calledWith({ from: 'foo', to: 'bar' })
+      .then(() => {
+        onEnter1.should.be.calledWith({ from: 'foo', to: 'bar' })
+        onEnter2.should.be.calledWith({ from: 'foo', to: 'bar' })
+      })
   })
 
   it('on leave', () => {
@@ -135,9 +148,10 @@ describe('fsm', () => {
       })
       .state('foo')
       .perform('a')
-
-    onLeave1.should.be.calledWith({ from: 'foo', to: 'bar' })
-    onLeave2.should.be.calledWith({ from: 'foo', to: 'bar' })
+      .then(() => {
+        onLeave1.should.be.calledWith({ from: 'foo', to: 'bar' })
+        onLeave2.should.be.calledWith({ from: 'foo', to: 'bar' })
+      })
   })
 
   it('available operations', () => {
@@ -150,7 +164,20 @@ describe('fsm', () => {
       })
       .addState('bar')
       .state('foo')
-      .ops.should.containEql('a')
-      .with.length(1)
+      .ops
+      .should.be.resolvedWith(['a'])
+
+    new Fsm()
+      .addState(function (state) {
+        state.name('foo')
+          .routes({
+            a: { to: 'bar', test () { return Promise.resolve(false) } },
+            b: { to: 'baz', test () { return true } }
+          })
+      })
+      .addState('bar')
+      .state('foo')
+      .ops
+      .should.be.resolvedWith(['b'])
   })
 })
