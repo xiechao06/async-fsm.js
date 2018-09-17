@@ -1,0 +1,22 @@
+{
+  "name": "fsm.js",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:hzwellliving/fsm.js.git",
+  "author": "xiechao06 <xiechao06@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "^5.2.0",
+    "should": "^13.2.3",
+    "standard": "^12.0.1"
+  },
+  "dependencies": {
+    "global": "^4.3.2"
+  },
+  "standard": {
+    "globals": [
+      "describe",
+      "it"
+    ]
+  }
+}
