@@ -7,6 +7,12 @@ a finite state machine implementation
 $ npm i fsm.js
 ```
 
+## Test
+
+```bash
+$ npm run test
+```
+
 ## Features
 
   * asynchronous onEnter, onLeave hooks
