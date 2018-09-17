@@ -1,6 +1,6 @@
 const State = require('./state')
 const { FSMUnknownState } = require('./errors')
-console.log(FSMUnknownState)
+const isEmpty = require('is-empty')
 class Fsm {
   constructor () {
     this._states = {}
@@ -45,13 +45,38 @@ class Fsm {
     return this
   }
 
-  perform (op) {
+  getState (state) {
+    return this._states(state)
+  }
+
+  perform (op, onLeaveCb, onEnterCb) {
     if (!this._state) {
       throw new Error('State is empty, do you forget to set the initialize state?')
     }
+    let oldState = this._state
     this._state = this._states[this._state].transit(op)
     if (!this._states.hasOwnProperty(this._state)) {
       throw new FSMUnknownState(this._state)
+    }
+    let onLeaveCbs = this._states[oldState].onLeaveCbs
+    if (!isEmpty(onLeaveCbs)) {
+      Promise.all(onLeaveCbs.map(it => it.apply(this, [{
+        from: oldState,
+        to: this._state
+      }])))
+        .then(it => typeof onEnterCb === 'function' && onEnterCb(null, it))
+        .catch(err => typeof onEnterCb === 'function' && onEnterCb(err))
+    }
+
+    let state = this._states[this._state]
+    let onEnterCbs = state.onEnterCbs
+    if (!isEmpty(onEnterCbs)) {
+      Promise.resolve(onEnterCbs.map(it => it.apply(this, [{
+        from: oldState,
+        to: this._state
+      }])))
+        .then(it => typeof onEnterCb === 'function' && onEnterCb(null, it))
+        .catch(err => typeof onEnterCb === 'function' && onEnterCb(err))
     }
     return this
   }
