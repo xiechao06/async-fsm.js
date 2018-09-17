@@ -1,5 +1,5 @@
-const State = require('../state')
-const { FSMInvalidOp } = require('../errors')
+const State = require('../lib/state')
+const { FSMInvalidOp } = require('../lib/errors')
 require('should')
 
 describe('state', function () {
