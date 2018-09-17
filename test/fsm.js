@@ -139,4 +139,18 @@ describe('fsm', () => {
     onLeave1.should.be.calledWith({ from: 'foo', to: 'bar' })
     onLeave2.should.be.calledWith({ from: 'foo', to: 'bar' })
   })
+
+  it('available operations', () => {
+    new Fsm()
+      .addState(function (state) {
+        state.name('foo')
+          .routes({
+            a: 'bar'
+          })
+      })
+      .addState('bar')
+      .state('foo')
+      .ops.should.containEql('a')
+      .with.length(1)
+  })
 })
