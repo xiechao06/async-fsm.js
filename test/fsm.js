@@ -107,7 +107,7 @@ describe('fsm', () => {
   it('on enter', () => {
     let onEnter1 = sinon.spy()
     let onEnter2 = sinon.spy()
-    new Fsm()
+    return new Fsm()
       .addState(function (state) {
         state
           .name('foo')
@@ -122,17 +122,31 @@ describe('fsm', () => {
           .onEnter(onEnter2)
       })
       .state('foo')
-      .perform('a')
+      .perform('a', {
+        baz: 'baz'
+      })
       .then(() => {
-        onEnter1.should.be.calledWith({ from: 'foo', to: 'bar' })
-        onEnter2.should.be.calledWith({ from: 'foo', to: 'bar' })
+        onEnter1.should.be.calledWith({
+          from: 'foo',
+          to: 'bar',
+          args: {
+            baz: 'baz'
+          }
+        })
+        onEnter2.should.be.calledWith({
+          from: 'foo',
+          to: 'bar',
+          args: {
+            baz: 'baz'
+          }
+        })
       })
   })
 
   it('on leave', () => {
     let onLeave1 = sinon.spy()
     let onLeave2 = sinon.spy()
-    new Fsm()
+    return new Fsm()
       .addState(function (state) {
         state
           .name('foo')
