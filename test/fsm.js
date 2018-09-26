@@ -39,9 +39,9 @@ describe('fsm', () => {
         .routes({
           finish: 'completed'
         })
-      )
+      , true)
       .addState('completed')
-      .createInstance('started')
+      .createInstance()
 
     let { reachable, operable } = await fsm.relavantStates
     operable.length.should.be.equal(1)
