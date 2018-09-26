@@ -43,7 +43,7 @@ describe('fsm', () => {
       .addState('completed')
       .createInstance()
 
-    let { reachable, operable } = await fsm.relavantStates
+    let { reachable, operable } = await fsm.relevantStates
     operable.length.should.be.equal(1)
     operable[0].should.be.equal('started')
     reachable.length.should.be.equal(1)
@@ -64,7 +64,7 @@ describe('fsm', () => {
       .createInstance('started')
       .bundle({ foo: 'foo' })
     {
-      let { reachable, operable } = await fsm.relavantStates
+      let { reachable, operable } = await fsm.relevantStates
       operable.length.should.be.equal(0)
       reachable.length.should.be.equal(0)
     }
