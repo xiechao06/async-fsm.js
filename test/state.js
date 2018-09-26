@@ -8,6 +8,13 @@ describe('state', function () {
     state.name('bar').name().should.be.exactly('bar')
   })
 
+  it('label', () => {
+    let state = new State('foo')
+      .label('bar')
+
+    state.label().should.be.exactly('bar')
+  })
+
   it('routes', () => {
     let state = new State('good')
       .routes({
