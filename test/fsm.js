@@ -33,7 +33,7 @@ describe('fsm', () => {
   })
 
   it('relevant states', async () => {
-    let fsm = new Fsm()
+    let instance = new Fsm()
       .addState(state => state
         .name('started')
         .routes({
@@ -43,20 +43,20 @@ describe('fsm', () => {
       .addState('completed')
       .createInstance()
 
-    let { reachable, operable } = await fsm.relevantStates
+    let { reachable, operable } = await instance.relevantStates
     operable.length.should.be.equal(1)
     operable[0].should.be.equal('started')
     reachable.length.should.be.equal(1)
     reachable[0].should.be.equal('completed')
 
-    fsm = new Fsm()
+    instance = new Fsm()
       .addState(state => state
         .name('started')
         .routes({
           finish: {
             to: 'completed',
             test (instance) {
-              return instance.bundle().foo === 'bar'
+              return Promise.resolve(instance.bundle().foo === 'bar')
             }
           }
         })
@@ -64,7 +64,7 @@ describe('fsm', () => {
       .createInstance('started')
       .bundle({ foo: 'foo' })
     {
-      let { reachable, operable } = await fsm.relevantStates
+      let { reachable, operable } = await instance.relevantStates
       operable.length.should.be.equal(0)
       reachable.length.should.be.equal(0)
     }
