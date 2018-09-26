@@ -6,13 +6,8 @@ describe('state', function () {
     let state = new State('foo')
     state.name().should.be.exactly('foo')
     state.name('bar').name().should.be.exactly('bar')
-  })
 
-  it('label', () => {
-    let state = new State('foo')
-      .label('bar')
-
-    state.label().should.be.exactly('bar')
+    state.name(() => 'baz').name().should.be.exactly('baz')
   })
 
   it('routes', () => {
