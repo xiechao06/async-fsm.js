@@ -62,3 +62,4 @@ typings/
 .vscode
 
 *.sw[p|o]
+Session.vim

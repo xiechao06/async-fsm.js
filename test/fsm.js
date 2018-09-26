@@ -5,6 +5,19 @@ require('should-sinon')
 require('should')
 
 describe('fsm', () => {
+  it('start state', () => {
+    (function () {
+      new Fsm().addState('started', true)
+    }).should.throw(Error)
+    let fsm = new Fsm()
+      .addState(state => state
+        .name('started')
+        .routes({
+          finish: 'ended'
+        }), true)
+    fsm.startState.name().should.be.equal('started')
+  })
+
   it('bundle', () => {
     let fsm = new Fsm()
     fsm.bundle({
