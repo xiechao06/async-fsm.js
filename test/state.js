@@ -11,7 +11,7 @@ describe('state', function () {
   })
 
   it('label', () => {
-    let state = new State().label('foo')
+    let state = new State('foo')
     state.label().should.be.exactly('foo')
     state.label('bar').label().should.be.exactly('bar')
 
