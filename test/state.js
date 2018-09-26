@@ -47,7 +47,7 @@ describe('state', function () {
           }
         }
       })
-      .ops
+      .getOps()
       .should.be.resolvedWith([])
   })
 })

@@ -27,6 +27,9 @@ describe('fsm', () => {
 
     fsmInstance.bundle().should.have.property('foo')
     fsmInstance.bundle().foo.should.be.exactly('abc')
+
+    fsmInstance.bundle(bundle => Object.assign({ bar: 'xyz' }))
+    fsmInstance.bundle().bar.should.be.exactly('xyz')
   })
 
   it('relevant states', async () => {
@@ -38,6 +41,8 @@ describe('fsm', () => {
         })
       )
       .addState('completed')
+      .createInstance('started')
+
     let { reachable, operable } = await fsm.relavantStates
     operable.length.should.be.equal(1)
     operable[0].should.be.equal('started')
@@ -46,16 +51,18 @@ describe('fsm', () => {
 
     fsm = new Fsm()
       .addState(state => state
-        .name(state)
+        .name('started')
         .routes({
           finish: {
             to: 'completed',
-            test () {
-              return false
+            test (instance) {
+              return instance.bundle().foo === 'bar'
             }
           }
         })
       )
+      .createInstance('started')
+      .bundle({ foo: 'foo' })
     {
       let { reachable, operable } = await fsm.relavantStates
       operable.length.should.be.equal(0)
