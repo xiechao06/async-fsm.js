@@ -1,8 +1,8 @@
 {
-  "name": "fsm.js",
+  "name": "async-fsm.js",
   "version": "1.1.0",
   "main": "index.js",
-  "repository": "git@github.com:hzwellliving/fsm.js.git",
+  "repository": "git@github.com:hzwellliving/async-fsm.js.git",
   "author": "xiechao06 <xiechao06@gmail.com>",
   "license": "MIT",
   "devDependencies": {
