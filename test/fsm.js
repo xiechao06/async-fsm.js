@@ -29,6 +29,40 @@ describe('fsm', () => {
     fsmInstance.bundle().foo.should.be.exactly('abc')
   })
 
+  it('relevant states', async () => {
+    let fsm = new Fsm()
+      .addState(state => state
+        .name('started')
+        .routes({
+          finish: 'completed'
+        })
+      )
+      .addState('completed')
+    let { reachable, operable } = await fsm.relavantStates
+    operable.length.should.be.equal(1)
+    operable[0].should.be.equal('started')
+    reachable.length.should.be.equal(1)
+    reachable[0].should.be.equal('completed')
+
+    fsm = new Fsm()
+      .addState(state => state
+        .name(state)
+        .routes({
+          finish: {
+            to: 'completed',
+            test () {
+              return false
+            }
+          }
+        })
+      )
+    {
+      let { reachable, operable } = await fsm.relavantStates
+      operable.length.should.be.equal(0)
+      reachable.length.should.be.equal(0)
+    }
+  })
+
   it('transition', async () => {
     let fsm = new Fsm()
       .addState(function (state) {
