@@ -63,3 +63,5 @@ typings/
 
 *.sw[p|o]
 Session.vim
+
+dist/
