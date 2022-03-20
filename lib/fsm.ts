@@ -16,14 +16,16 @@ export class Fsm<
   }
 
   addState(
-    stateName: NameType | State<NameType, OpType, BundleType>
+    stateName: NameType, builder?: (this: Fsm<NameType, OpType, BundleType>, state: State<NameType, OpType, BundleType>) => void
   ): Fsm<NameType, OpType, BundleType> {
-    const state: State<NameType, OpType, BundleType> =
-      typeof stateName === "object" ? stateName : new State(stateName);
-    this._states[state.name] = state;
+    const state = new State<NameType, OpType, BundleType>(stateName);
+    // const state: State<NameType, OpType, BundleType> =
+    //   typeof stateName === "object" ? stateName : new State(stateName);
+    this._states[stateName] = state;
     if (typeof this._startState === "undefined") {
       this._startState = state;
     }
+    builder?.apply(this, [state]);
     return this;
   }
 

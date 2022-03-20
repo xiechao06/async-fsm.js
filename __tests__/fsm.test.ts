@@ -2,8 +2,8 @@ import { Fsm, FSMUnknownState, State } from "../index";
 import { FSMInvalidOp } from "../lib/errors";
 
 test("start state", () => {
-  const fsm = new Fsm().addState(new State<string>("started")
-    .routes({
+  const fsm = new Fsm().addState("started", (state) =>
+    state.routes({
       finish: "ended",
     })
   );
@@ -13,8 +13,8 @@ test("start state", () => {
 
 test("bundle", () => {
   const fsm = new Fsm()
-    .addState(new State<string, string>("started")
-      .routes({
+    .addState("started", (it) =>
+      it.routes({
         finish: "ended",
       })
     )
@@ -28,8 +28,8 @@ test("on leave", async () => {
   const onLeave1 = jest.fn(() => 1);
   const onLeave2 = jest.fn(() => 2);
   const fsmInstance = new Fsm()
-    .addState(
-      new State<string, string>("intact")
+    .addState("intact", (it) =>
+      it
         .routes({
           hit: "broken",
         })
@@ -37,8 +37,11 @@ test("on leave", async () => {
         .onLeave(onLeave2)
     )
     .addState("broken")
-    .createInstance()
-  const {onLeaveResults} = await fsmInstance.perform<number>("hit", "with stick");
+    .createInstance();
+  const { onLeaveResults } = await fsmInstance.perform<number>(
+    "hit",
+    "with stick"
+  );
   expect(onLeaveResults).toEqual([1, 2]);
   expect(onLeave1).toBeCalledWith(fsmInstance, {
     from: "intact",
@@ -55,17 +58,19 @@ test("on leave", async () => {
 test("on enter", async () => {
   const onEnter1 = jest.fn(() => 1);
   const onEnter2 = jest.fn(() => 2);
-  const fsmInstance =  new Fsm()
-    .addState(
-      new State<string>("intact").routes({
+  const fsmInstance = new Fsm()
+    .addState("intact", (it) =>
+      it.routes({
         hit: "broken",
       })
     )
-    .addState(new State<string>("broken").onEnter(onEnter1).onEnter(onEnter2))
+    .addState("broken", (it) => it.onEnter(onEnter1).onEnter(onEnter2))
     .createInstance();
-  const { onEnterResults } = await fsmInstance.perform<unknown, number>("hit", "with stick");
+  const { onEnterResults } = await fsmInstance.perform<unknown, number>(
+    "hit",
+    "with stick"
+  );
   expect(onEnterResults).toEqual([1, 2]);
-
 
   expect(onEnter1).toBeCalledWith(fsmInstance, {
     from: "intact",
@@ -87,8 +92,8 @@ test("terminated", () => {
 test("throw unknown state", () =>
   expect(
     new Fsm()
-      .addState(new State<string>("intact").
-        routes({
+      .addState("intact", (it) =>
+        it.routes({
           hit: "broken",
         })
       )
@@ -99,8 +104,8 @@ test("throw unknown state", () =>
 describe("available operations", () => {
   test("without test", async () => {
     const fsmInstance = await new Fsm()
-      .addState(new State<string>("intact")
-        .routes({
+      .addState("intact", (it) =>
+        it.routes({
           hit: "broken",
         })
       )
@@ -112,8 +117,8 @@ describe("available operations", () => {
   test("with test", () =>
     expect(
       new Fsm()
-        .addState(new State<string>("intact")
-          .routes({
+        .addState("intact", (it) =>
+          it.routes({
             hit: {
               to: "broken",
               test() {
@@ -141,8 +146,8 @@ test("throw invalid op", async () => {
 
   await expect(
     new Fsm()
-      .addState(new State<string>("intact")
-        .routes({
+      .addState("intact", (it) =>
+        it.routes({
           hit: {
             to: "broken",
             test() {
@@ -159,20 +164,20 @@ test("throw invalid op", async () => {
 
 test("transition", async () => {
   const fsm = new Fsm()
-    .addState(new State<string>("green")
-      .routes({
+    .addState("green", (it) =>
+      it.routes({
         turnYellow: "yellow",
         close: "closed",
       })
     )
-    .addState(new State<string>("yellow")
-      .routes({
+    .addState("yellow", (it) =>
+      it.routes({
         turnRed: "red",
         close: "closed",
       })
     )
-    .addState(new State<string>("red")
-      .routes({
+    .addState("red", (it) =>
+      it.routes({
         turnGree: "green",
         close: "closed",
       })
@@ -191,22 +196,23 @@ test("transition", async () => {
 describe("relavant states", () => {
   test("without test", async () => {
     const instance = new Fsm()
-      .addState(new State<string>("started")
-        .routes({
+      .addState("started", (it) =>
+        it.routes({
           finish: "completed",
         })
       )
       .addState("completed")
       .createInstance();
-    const { reachables: reachable, operables: operable } = await instance.getRelevantStates();
+    const { reachables: reachable, operables: operable } =
+      await instance.getRelevantStates();
     expect(operable).toContain("started");
     expect(reachable).toContain("completed");
   });
 
   test("with test", async () => {
     const instance = new Fsm()
-      .addState(new State<string>("started")
-        .routes({
+      .addState(
+        new State<string>("started").routes({
           finish: {
             to: "completed",
             test(fsmInstance) {
@@ -217,7 +223,8 @@ describe("relavant states", () => {
       )
       .createInstance()
       .bundle("foo");
-    const { reachables: reachable, operables: operable } = await instance.getRelevantStates();
+    const { reachables: reachable, operables: operable } =
+      await instance.getRelevantStates();
     expect(reachable.size).toBe(0);
     expect(operable.size).toBe(0);
   });
