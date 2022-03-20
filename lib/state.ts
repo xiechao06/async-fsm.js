@@ -20,7 +20,7 @@ export type Routes<
   NameType extends string | number | symbol = string,
   OpType extends string | number | symbol = string,
   BundleType = unknown
-> = Record<
+> = Partial<Record<
   OpType,
   | {
       to: NameType;
@@ -30,7 +30,7 @@ export type Routes<
       ) => boolean | Promise<boolean>;
     }
   | NameType
->;
+>>;
 
 export class State<
   NameType extends string | number | symbol = string,
