@@ -2,48 +2,63 @@ import isEmpty from "is-empty";
 import { FSMInvalidOp } from "./errors";
 import { FsmInstance } from "./fsm";
 
-type Callback<BundleType> = (
-  this: State<BundleType>,
-  fsmInstance: FsmInstance<BundleType>,
+type Callback<
+  NameType extends string | number | symbol,
+  OpType extends string | number | symbol,
+  BundleType
+> = (
+  this: State<NameType, OpType, BundleType>,
+  fsmInstance: FsmInstance<NameType, OpType, BundleType>,
   context: {
-    from: string;
-    to: string;
+    from: NameType;
+    to: NameType;
     actionArgs?: unknown;
   }
 ) => Promise<unknown> | unknown;
 
-export type Routes<BundleType> = Record<
-  string,
+export type Routes<
+  NameType extends string | number | symbol = string,
+  OpType extends string | number | symbol = string,
+  BundleType = unknown
+> = Record<
+  OpType,
   | {
-      to: string;
-      test?: (this: State<BundleType>, fsmInstance?: FsmInstance<BundleType>) => boolean | Promise<boolean>;
+      to: NameType;
+      test?: (
+        this: State<NameType, OpType, BundleType>,
+        fsmInstance?: FsmInstance<NameType, OpType, BundleType>
+      ) => boolean | Promise<boolean>;
     }
-  | string
+  | NameType
 >;
 
-export class State<BundleType> {
-  private _name: string;
-  private _label?: string | ((this: State<BundleType>) => string);
+export class State<
+  NameType extends string | number | symbol = string,
+  OpType extends string | number | symbol = string,
+  BundleType = unknown
+> {
+  private _name: NameType;
+  private _label?: string | ((this: State<NameType, OpType, BundleType>) => string);
 
-  private _routes: Routes<BundleType>;
+  private _routes: Routes<NameType, OpType, BundleType>;
 
-  private _onEnterCbs: Callback<BundleType>[];
-  private _onLeaveCbs: Callback<BundleType>[];
+  private _onEnterCbs: Callback<NameType, OpType, BundleType>[];
+  private _onLeaveCbs: Callback<NameType, OpType,BundleType>[];
 
-  constructor(name: string) {
+  constructor(name: NameType) {
     this._name = name;
-    this._routes = {};
+    this._routes = {} as Routes<NameType, OpType, BundleType>;
     this._onEnterCbs = [];
     this._onLeaveCbs = [];
   }
 
-  get name(): string {
+  get name(): NameType {
     return this._name;
   }
 
   label(): string;
-  label(arg: string): State<BundleType>;
-  label(arg?: string): string | State<BundleType> {
+  label(arg: string): State<NameType, OpType, BundleType>;
+  label(arg?: string): string | State<NameType, OpType, BundleType> {
     if (arg !== void 0) {
       this._label = arg;
       return this;
@@ -51,12 +66,14 @@ export class State<BundleType> {
     if (typeof this._label === "function") {
       return this._label.apply(this);
     }
-    return this._label || this.name;
+    return this._label || this.name + "";
   }
 
-  routes(): Routes<BundleType>;
-  routes(arg: Routes<BundleType>): State<BundleType>;
-  routes(arg?: Routes<BundleType>): Routes<BundleType> | State<BundleType> {
+  routes(): Routes<NameType, OpType, BundleType>;
+  routes(arg: Routes<NameType, OpType, BundleType>): State<NameType, OpType, BundleType>;
+  routes(
+    arg?: Routes<NameType, OpType, BundleType>
+  ): Routes<NameType, OpType, BundleType> | State<NameType, OpType, BundleType> {
     if (arg === void 0) {
       return this._routes;
     }
@@ -64,7 +81,7 @@ export class State<BundleType> {
     return this;
   }
 
-  async transit(op: string): Promise<string> {
+  async transit(op: OpType): Promise<NameType> {
     const ret = this._routes[op];
     if (!ret) {
       throw new FSMInvalidOp(op, this);
@@ -74,24 +91,24 @@ export class State<BundleType> {
         throw new FSMInvalidOp(op, this);
       }
     }
-    return typeof ret === "object" ? ret.to : ret;
+    return typeof ret === "object" ? ret.to : ret as NameType;
   }
 
-  onEnter(arg: Callback<BundleType>): State<BundleType> {
+  onEnter(arg: Callback<NameType, OpType, BundleType>): State<NameType, OpType, BundleType> {
     this._onEnterCbs.push(arg);
     return this;
   }
 
-  get onEnterCbs(): Callback<BundleType>[] {
+  get onEnterCbs(): Callback<NameType, OpType, BundleType>[] {
     return this._onEnterCbs;
   }
 
-  onLeave(arg: Callback<BundleType>): State<BundleType> {
+  onLeave(arg: Callback<NameType, OpType, BundleType>): State<NameType, OpType, BundleType> {
     this._onLeaveCbs.push(arg);
     return this;
   }
 
-  get onLeaveCbs(): Callback<BundleType>[] {
+  get onLeaveCbs(): Callback<NameType, OpType, BundleType>[] {
     return this._onLeaveCbs;
   }
 
@@ -99,14 +116,14 @@ export class State<BundleType> {
     return isEmpty(this._routes);
   }
 
-  async getOps(): Promise<string[]> {
+  async getOps(): Promise<OpType[]> {
     const ret = [];
     for (const k in this._routes) {
-      const route = this._routes[k];
-      if (typeof route === "string") {
+      const nextState = this._routes[k];
+      if (typeof nextState !== "object") {
         ret.push(k);
-      } else if (typeof route.test === "function") {
-        if (await Promise.resolve(route.test.apply(this))) {
+      } else if (typeof nextState.test === "function") {
+        if (await Promise.resolve(nextState.test.apply(this))) {
           ret.push(k);
         }
       }
